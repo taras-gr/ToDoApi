@@ -1,4 +1,4 @@
-﻿namespace ToDo.DAL
+﻿namespace ToDo.Domain
 {
     public class ToDoItem
     {

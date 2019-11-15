@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ToDo.DAL
+namespace ToDo.Domain
 {
     public class User
     {
