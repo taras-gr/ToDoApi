@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace ToDo.Domain
+namespace ToDo.Domain.Interfaces
 {
     public interface IToDoRepository
     {
-        ToDoItem GetToDoItem(int userId, int toDoId);
-        List<ToDoItem> GetToDoItems(int userId);
-        void AddToDoItem(int userId, ToDoItem toDoItem);
-        void UpdateToDoItem(int userId, int toDoId, ToDoItem toDoItem);
-        void DeleteToDoItem(int userId, int toDoId);
+        ToDoItem GetToDoItem(int toDoId);
+        List<ToDoItem> GetToDoItems(string userId);
+        void AddToDoItem(ToDoItem toDoItem);
+        void UpdateToDoItem(int toDoId, ToDoItem toDoItem);
+        void DeleteToDoItem(int toDoId);
     }
 }

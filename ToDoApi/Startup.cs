@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using ToDo.Domain.Interfaces;
+using ToDo.Repositories;
+using ToDo.Repositories.Repositories;
 using ToDoApi.Models;
 
 namespace ToDoApi
@@ -35,6 +38,9 @@ namespace ToDoApi
 
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddEntityFrameworkStores<AuthenticationContext>();
+
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IToDoRepository, ToDoRepository>();
 
             services.Configure<IdentityOptions>(options =>
             {

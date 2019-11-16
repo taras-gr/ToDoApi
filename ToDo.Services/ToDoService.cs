@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ToDo.Domain;
+using ToDo.Domain.Interfaces;
 
 namespace ToDo.Services
 {
@@ -14,29 +15,29 @@ namespace ToDo.Services
             _repository = repository;
         }
 
-        public void AddToDo(int userId, ToDoItem toDoItem)
+        public void AddToDo(ToDoItem toDoItem)
         {
-            _repository.AddToDoItem(userId, toDoItem);
+            _repository.AddToDoItem(toDoItem);
         }
 
-        public void DeleteToDo(int userId, int toDoId)
+        public void DeleteToDo(int toDoId)
         {
-            _repository.DeleteToDoItem(userId, toDoId);
+            _repository.DeleteToDoItem(toDoId);
         }
 
-        public ToDoItem GetToDo(int userId, int toDoId)
+        public ToDoItem GetToDo(int toDoId)
         {
-            return _repository.GetToDoItem(userId, toDoId);
+            return _repository.GetToDoItem(toDoId);
         }
 
         public List<ToDoItem> GetToDos(int userId)
         {
-            return _repository.GetToDoItems(userId);
+            throw new NotImplementedException();
         }
 
-        public void UpdateToDo(int userId, int toDoId, ToDoItem toDoItem)
+        public void UpdateToDo(int toDoId, ToDoItem toDoItem)
         {
-            _repository.UpdateToDoItem(userId, toDoId, toDoItem);
+            _repository.UpdateToDoItem(toDoId, toDoItem);
         }
     }
 }

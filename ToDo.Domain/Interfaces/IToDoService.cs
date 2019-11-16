@@ -6,10 +6,10 @@ namespace ToDo.Domain
 {
     public interface IToDoService
     {
-        ToDoItem GetToDo(int userId, int toDoId);
+        ToDoItem GetToDo(int toDoId);
         List<ToDoItem> GetToDos(int userId);
-        void AddToDo(int userId, ToDoItem toDoItem);
-        void UpdateToDo(int userId, int toDoId, ToDoItem toDoItem);
-        void DeleteToDo(int userId, int toDoId);
+        void AddToDo(ToDoItem toDoItem);
+        void UpdateToDo(int toDoId, ToDoItem toDoItem);
+        void DeleteToDo(int toDoId);
     }
 }
