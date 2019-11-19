@@ -1,63 +1,88 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using Dapper;
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 using ToDo.Domain;
+using ToDo.Domain.Classes;
 using ToDo.Domain.Interfaces;
+using ToDo.Domain.Models;
 
-namespace ToDo.Repositories.Repositories
+namespace ToDo.Repositories
 {
     public class ToDoRepository : IToDoRepository
     {
-        private string connectionString = "Data Source=DESKTOP-RUQ7T0V;Initial Catalog=ToDoDb;Integrated Security=True;Pooling=False";
+        private readonly ToDoDbContext _context;
 
-        public ToDoItem GetToDoItem(int toDoId)
+        public ToDoRepository(IOptions<Settings> settings)
         {
-            ToDoItem toDoItem;
-            using (IDbConnection db = new SqlConnection(connectionString))
-            {
-                toDoItem = db.Query<ToDoItem>("SELECT * FROM ToDoItems WHERE Id = @toDoId", new { toDoId }).FirstOrDefault();
-            }
-            return toDoItem;
+            _context = new ToDoDbContext(settings);
         }
 
-        public List<ToDoItem> GetToDoItems(string userId)
+        public async Task AddToDoItem(ToDoItem toDoItem)
         {
-            List<ToDoItem> toDoItems;
-            using (IDbConnection db = new SqlConnection(connectionString))
+            try
             {
-                toDoItems = db.Query<ToDoItem>($"SELECT * FROM ToDoItems WHERE UserId = '{userId}'").ToList();
+                await _context.ToDoItems.InsertOneAsync(toDoItem);
             }
-            return toDoItems;
-        }
-
-        public void AddToDoItem(ToDoItem toDoItem)
-        {
-            using (IDbConnection db = new SqlConnection(connectionString))
+            catch (Exception ex)
             {
-                var sqlQuery = "INSERT INTO ToDoItems (Title, Text, IsDone, UserId) VALUES " +
-                               $"('{toDoItem.Title}', '{toDoItem.Text}', '{toDoItem.IsDone}', '{toDoItem.UserId}')";
-                db.Execute(sqlQuery);
+                throw ex;
             }
         }
 
-        public void UpdateToDoItem(int toDoId, ToDoItem toDoItem)
+        public async Task<bool> DeleteToDoItem(int toDoId)
         {
-            using (IDbConnection db = new SqlConnection(connectionString))
+            try
             {
-                var sqlQuery = $"UPDATE ToDoItems SET Title = '{toDoItem.Title}', Text = '{toDoItem.Text}', IsDone = '{toDoItem.IsDone}', UserId = '{toDoItem.UserId}' " +
-                               $"WHERE Id = '{toDoId}";
-                db.Execute(sqlQuery);
+                DeleteResult actionResult = await _context.ToDoItems.DeleteOneAsync(Builders<ToDoItem>.Filter.Eq("Id", toDoId));
+
+                return actionResult.IsAcknowledged && actionResult.DeletedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
-        public void DeleteToDoItem(int toDoId)
+        public async Task<ToDoItem> GetToDoItem(int toDoId)
         {
-            using (IDbConnection db = new SqlConnection(connectionString))
+            try
             {
-                var sqlQuery = $"DELETE FROM ToDoItems WHERE Id = {toDoId}";
-                db.Execute(sqlQuery);
+                return await _context.ToDoItems.Find(toDoItem => toDoItem.Id == toDoId).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<ToDoItem>> GetToDoItems(string userId)
+        {
+            try
+            {
+                return await _context.ToDoItems.Find(toDoItem => toDoItem.UserId == userId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem)
+        {
+            try
+            {
+                ReplaceOneResult actionResult = await _context.ToDoItems.ReplaceOneAsync(n => n.Id.Equals(toDoId),
+                                                                                            toDoItem,
+                                                                                            new UpdateOptions { IsUpsert = true });
+
+                return actionResult.IsAcknowledged && actionResult.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

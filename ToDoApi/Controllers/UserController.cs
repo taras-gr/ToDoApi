@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
+using ToDo.Domain.Models;
 
 namespace ToDoApi.Controllers
 {

@@ -1,59 +1,89 @@
-﻿using System;
+﻿using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using Dapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
+using ToDo.Domain.Classes;
+using ToDo.Domain.Models;
 
-namespace ToDo.Repositories
+namespace ToDo.Repositories.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly string connectionString = "Data Source=DESKTOP-RUQ7T0V;Initial Catalog=ToDoDb;Integrated Security=True;Pooling=False";
+        private readonly ToDoDbContext _context;
 
-        public User GetUser(int userId)
+        public UserRepository(IOptions<Settings> settings)
         {
-            User user = null;
-            using (IDbConnection db = new SqlConnection(connectionString))
-            {
-                user = db.Query<User>("SELECT * FROM Users WHERE Id = @userId", new { userId }).FirstOrDefault();
-            }
-            return user;
+            _context = new ToDoDbContext(settings);
         }
 
-        public List<User> GetUsers()
+        public async Task AddUser(User user)
         {
-            List<User> users = null;
-            using (IDbConnection db = new SqlConnection(connectionString))
+            try
             {
-                users = db.Query<User>("SELECT * FROM Users").ToList();
+                await _context.Users.InsertOneAsync(user);
             }
-            return users;
-        }
-
-        public void AddUser(User user)
-        {
-            using (IDbConnection db = new SqlConnection(connectionString))
+            catch (Exception ex)
             {
-                var sqlQuery = $"INSERT INTO Users (Name, FullName, Email) VALUES ('{user.Name}', '{user.FullName}', '{user.Email}')";
-                db.Execute(sqlQuery);
+                throw ex;
             }
         }
 
-        public void UpdateUser(int userId, User user)
+        public async Task<bool> DeleteUser(string userName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                DeleteResult actionResult = await _context.Users.DeleteOneAsync(Builders<User>.Filter.Eq("Name", userName));
+
+                return actionResult.IsAcknowledged && actionResult.DeletedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public void DeleteUser(int userId)
+        public async Task<User> GetUserByName(string userName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _context.Users.Find(user => user.Name == userName).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<User>> GetUsers()
+        {
+            try
+            {
+                return await _context.Users.Find(_ => true).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> UpdateUser(string userName, User user)
+        {
+            try
+            {
+                ReplaceOneResult actionResult = await _context.Users.ReplaceOneAsync(n => n.Name.Equals(userName),
+                                                                                        user,
+                                                                                        new UpdateOptions { IsUpsert = true });
+
+                return actionResult.IsAcknowledged && actionResult.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

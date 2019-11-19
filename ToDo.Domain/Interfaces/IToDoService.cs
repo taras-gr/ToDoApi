@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using ToDo.Domain.Models;
 
 namespace ToDo.Domain
 {
     public interface IToDoService
     {
-        ToDoItem GetToDo(int toDoId);
-        List<ToDoItem> GetToDos(int userId);
-        void AddToDo(ToDoItem toDoItem);
-        void UpdateToDo(int toDoId, ToDoItem toDoItem);
-        void DeleteToDo(int toDoId);
+        Task<ToDoItem> GetToDoItem(int toDoId);
+        Task<List<ToDoItem>> GetToDoItems(string userId);
+        Task AddToDoItem(ToDoItem toDoItem);
+        Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem);
+        Task<bool> DeleteToDoItem(int toDoId);
     }
 }

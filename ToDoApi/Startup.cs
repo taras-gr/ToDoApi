@@ -9,9 +9,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using ToDo.Domain;
+using ToDo.Domain.Classes;
 using ToDo.Domain.Interfaces;
 using ToDo.Repositories;
 using ToDo.Repositories.Repositories;
+using ToDo.Services;
 using ToDoApi.Models;
 
 namespace ToDoApi
@@ -28,6 +31,13 @@ namespace ToDoApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<Settings>(options =>
+            {
+                options.ConnectionString
+                    = Configuration.GetSection("MongoConnection:ConnectionString").Value;
+                options.Database
+                    = Configuration.GetSection("MongoConnection:Database").Value;
+            });
             //Inject AppSettings
             services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
@@ -41,6 +51,8 @@ namespace ToDoApi
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IToDoRepository, ToDoRepository>();
+            services.AddScoped<IToDoService, ToDoService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.Configure<IdentityOptions>(options =>
             {

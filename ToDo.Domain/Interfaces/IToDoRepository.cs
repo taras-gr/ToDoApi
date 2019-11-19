@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using ToDo.Domain.Models;
 
 namespace ToDo.Domain.Interfaces
 {
     public interface IToDoRepository
     {
-        ToDoItem GetToDoItem(int toDoId);
-        List<ToDoItem> GetToDoItems(string userId);
-        void AddToDoItem(ToDoItem toDoItem);
-        void UpdateToDoItem(int toDoId, ToDoItem toDoItem);
-        void DeleteToDoItem(int toDoId);
+        Task<ToDoItem> GetToDoItem(int toDoId);
+        Task<List<ToDoItem>> GetToDoItems(string userId);
+        Task AddToDoItem(ToDoItem toDoItem);
+        Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem);
+        Task<bool> DeleteToDoItem(int toDoId);
     }
 }

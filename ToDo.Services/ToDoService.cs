@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
+using ToDo.Domain.Models;
 
 namespace ToDo.Services
 {
@@ -14,30 +16,29 @@ namespace ToDo.Services
         {
             _repository = repository;
         }
-
-        public void AddToDo(ToDoItem toDoItem)
+        public async Task AddToDoItem(ToDoItem toDoItem)
         {
-            _repository.AddToDoItem(toDoItem);
+            await _repository.AddToDoItem(toDoItem);
         }
 
-        public void DeleteToDo(int toDoId)
+        public async Task<bool> DeleteToDoItem(int toDoId)
         {
-            _repository.DeleteToDoItem(toDoId);
+            return await _repository.DeleteToDoItem(toDoId);
         }
 
-        public ToDoItem GetToDo(int toDoId)
+        public async Task<ToDoItem> GetToDoItem(int toDoId)
         {
-            return _repository.GetToDoItem(toDoId);
+            return await _repository.GetToDoItem(toDoId);
         }
 
-        public List<ToDoItem> GetToDos(int userId)
+        public async Task<List<ToDoItem>> GetToDoItems(string userId)
         {
-            throw new NotImplementedException();
+            return await _repository.GetToDoItems(userId);
         }
 
-        public void UpdateToDo(int toDoId, ToDoItem toDoItem)
+        public async Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem)
         {
-            _repository.UpdateToDoItem(toDoId, toDoItem);
+            return await _repository.UpdateToDoItem(toDoId, toDoItem);
         }
     }
 }

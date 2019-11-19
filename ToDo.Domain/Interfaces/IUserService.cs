@@ -6,7 +6,7 @@ using ToDo.Domain.Models;
 
 namespace ToDo.Domain.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserService
     {
         Task<User> GetUserByName(string userName);
         Task<List<User>> GetUsers();

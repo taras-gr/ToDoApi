@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
+using ToDo.Domain.Models;
+using ToDoApi.DTOs;
 
 namespace ToDoApi.Controllers
 {
@@ -13,25 +16,46 @@ namespace ToDoApi.Controllers
     [ApiController]
     public class ToDoItemController : ControllerBase
     {
-        private readonly IToDoRepository _repository;
+        private readonly IToDoService _toDoService;
 
-        public ToDoItemController(IToDoRepository repository)
+        public ToDoItemController(IToDoService toDoService)
         {
-            _repository = repository;
+            _toDoService = toDoService;
         }
 
-        [HttpGet("{userId}")]
-        public IActionResult Get(string userId)
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<List<ToDoItem>>> GetToDoItem()
         {
-            var toDoItems = _repository.GetToDoItems(userId);
+            try
+            {
+                string userIdFromUserManager = User.Claims.First(c => c.Type == "UserID").Value;
 
-            return Ok(toDoItems);
+                var toDoItems = await _toDoService.GetToDoItems(userIdFromUserManager);
+
+                return toDoItems;
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
         }
 
         [HttpPost]
-        public IActionResult Post(User user)
+        [Authorize]
+        public IActionResult Post([FromBody]ToDoItemCreateDto toDoItem)
         {
-            //_repository.AddUser(user);
+            string userIdFromUserManager = User.Claims.First(c => c.Type == "UserID").Value;
+
+            var toDoItemToCreate = new ToDoItem
+            {
+                Text = toDoItem.Text,
+                Title = toDoItem.Title,
+                IsDone = toDoItem.IsDone,
+                UserId = userIdFromUserManager
+            };
+
+            _toDoService.AddToDoItem(toDoItemToCreate);
 
             return NoContent();
         }

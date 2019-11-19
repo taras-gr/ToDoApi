@@ -1,4 +1,8 @@
-﻿namespace ToDoApi.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace ToDo.Domain.Interfaces
 {
     public class ApplicationUserModel
     {
