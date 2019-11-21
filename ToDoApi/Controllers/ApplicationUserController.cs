@@ -44,7 +44,7 @@ namespace ToDo.Api.Controllers
             try
             {
                 await _userService.AddUser(newComer);
-                return Ok();
+                return Ok(new { Succeeded = true });
             }
             catch (Exception)
             {
