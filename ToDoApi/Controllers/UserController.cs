@@ -8,7 +8,7 @@ using ToDo.Domain;
 using ToDo.Domain.Interfaces;
 using ToDo.Domain.Models;
 
-namespace ToDoApi.Controllers
+namespace ToDo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using ToDo.Domain.Models;
 
 namespace ToDo.Domain.Interfaces
 {
-    public interface IUserService
+    public interface IUserRepository
     {
+        Task<User> GetUserById(ObjectId userId);
         Task<User> GetUserByName(string userName);
         Task<List<User>> GetUsers();
         Task AddUser(User user);
-        Task<bool> UpdateUser(string userName, User user);
-        Task<bool> DeleteUser(string userName);
+        Task<bool> UpdateUser(string userId, User user);
+        Task<bool> DeleteUser(string userId);
     }
 }

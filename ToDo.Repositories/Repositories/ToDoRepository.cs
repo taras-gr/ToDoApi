@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using ToDo.Domain;
 using ToDo.Domain.Classes;
 using ToDo.Domain.Interfaces;
@@ -32,11 +33,11 @@ namespace ToDo.Repositories
             }
         }
 
-        public async Task<bool> DeleteToDoItem(int toDoId)
+        public async Task<bool> DeleteToDoItem(ObjectId toDoItemId)
         {
             try
             {
-                DeleteResult actionResult = await _context.ToDoItems.DeleteOneAsync(Builders<ToDoItem>.Filter.Eq("Id", toDoId));
+                DeleteResult actionResult = await _context.ToDoItems.DeleteOneAsync(Builders<ToDoItem>.Filter.Eq("Id", toDoItemId));
 
                 return actionResult.IsAcknowledged && actionResult.DeletedCount > 0;
             }
@@ -46,11 +47,11 @@ namespace ToDo.Repositories
             }
         }
 
-        public async Task<ToDoItem> GetToDoItem(int toDoId)
+        public async Task<ToDoItem> GetToDoItem(ObjectId toDoItemId)
         {
             try
             {
-                return await _context.ToDoItems.Find(toDoItem => toDoItem.Id == toDoId).FirstOrDefaultAsync();
+                return await _context.ToDoItems.Find(toDoItem => toDoItem.Id == toDoItemId).FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -70,11 +71,11 @@ namespace ToDo.Repositories
             }
         }
 
-        public async Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem)
+        public async Task<bool> UpdateToDoItem(ObjectId toDoItemId, ToDoItem toDoItem)
         {
             try
             {
-                ReplaceOneResult actionResult = await _context.ToDoItems.ReplaceOneAsync(n => n.Id.Equals(toDoId),
+                ReplaceOneResult actionResult = await _context.ToDoItems.ReplaceOneAsync(n => n.Id.Equals(toDoItemId),
                                                                                             toDoItem,
                                                                                             new UpdateOptions { IsUpsert = true });
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
 using ToDo.Domain.Classes;
@@ -32,13 +33,25 @@ namespace ToDo.Repositories.Repositories
             }
         }
 
-        public async Task<bool> DeleteUser(string userName)
+        public async Task<bool> DeleteUser(string userId)
         {
             try
             {
-                DeleteResult actionResult = await _context.Users.DeleteOneAsync(Builders<User>.Filter.Eq("Name", userName));
+                DeleteResult actionResult = await _context.Users.DeleteOneAsync(Builders<User>.Filter.Eq("Id", userId));
 
                 return actionResult.IsAcknowledged && actionResult.DeletedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<User> GetUserById(ObjectId userId)
+        {
+            try
+            {
+                return await _context.Users.Find(user => user.Id == userId).FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -70,11 +83,11 @@ namespace ToDo.Repositories.Repositories
             }
         }
 
-        public async Task<bool> UpdateUser(string userName, User user)
+        public async Task<bool> UpdateUser(string userId, User user)
         {
             try
             {
-                ReplaceOneResult actionResult = await _context.Users.ReplaceOneAsync(n => n.Name.Equals(userName),
+                ReplaceOneResult actionResult = await _context.Users.ReplaceOneAsync(n => n.Id.ToString().Equals(userId),
                                                                                         user,
                                                                                         new UpdateOptions { IsUpsert = true });
 

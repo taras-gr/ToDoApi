@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using ToDo.Domain.Models;
 
 namespace ToDo.Domain
 {
     public interface IToDoService
     {
-        Task<ToDoItem> GetToDoItem(int toDoId);
+        Task<ToDoItem> GetToDoItem(ObjectId toDoItemId);
         Task<List<ToDoItem>> GetToDoItems(string userId);
         Task AddToDoItem(ToDoItem toDoItem);
-        Task<bool> UpdateToDoItem(int toDoId, ToDoItem toDoItem);
-        Task<bool> DeleteToDoItem(int toDoId);
+        Task<bool> UpdateToDoItem(ObjectId toDoItemId, ToDoItem toDoItem);
+        Task<bool> DeleteToDoItem(ObjectId toDoItemId);
     }
 }

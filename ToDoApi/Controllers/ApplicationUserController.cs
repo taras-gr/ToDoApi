@@ -8,12 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
-using ToDo.Domain;
 using ToDo.Domain.Interfaces;
 using ToDo.Domain.Models;
 using ToDoApi.Models;
 
-namespace ToDoApi.Controllers
+namespace ToDo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -66,7 +65,7 @@ namespace ToDoApi.Controllers
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim("UserID", user.Name)
+                        new Claim("UserId", user.Id.ToString())
                     }),
                     Expires = DateTime.UtcNow.AddDays(1),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)

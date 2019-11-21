@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using ToDo.Domain;
 using ToDo.Domain.Interfaces;
 using ToDo.Domain.Models;
@@ -22,11 +23,16 @@ namespace ToDo.Services
             await _repository.AddUser(user);
         }
 
-        public async Task<bool> DeleteUser(string userName)
+        public async Task<bool> DeleteUser(string userId)
         {
-            return await _repository.DeleteUser(userName);
+            return await _repository.DeleteUser(userId);
         }
-        
+
+        public async Task<User> GetUserById(ObjectId userId)
+        {
+            return await _repository.GetUserById(userId);
+        }
+
         public async Task<User> GetUserByName(string userName)
         {
             return await _repository.GetUserByName(userName);
@@ -37,9 +43,9 @@ namespace ToDo.Services
             return await _repository.GetUsers();
         }
 
-        public async Task<bool> UpdateUser(string userName, User user)
+        public async Task<bool> UpdateUser(string userId, User user)
         {
-            return await _repository.UpdateUser(userName, user);
+            return await _repository.UpdateUser(userId, user);
         }
     }
 }

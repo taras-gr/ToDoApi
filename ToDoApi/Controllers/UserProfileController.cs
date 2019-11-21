@@ -1,21 +1,20 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ToDoApi.Models;
+using MongoDB.Bson;
+using ToDo.Domain.Interfaces;
 
-namespace ToDoApi.Controllers
+namespace ToDo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UserProfileController : ControllerBase
     {
-        private UserManager<ApplicationUser> _userManager;
-        public UserProfileController(UserManager<ApplicationUser> userManager)
+        private readonly IUserService _userService;
+        public UserProfileController(IUserService userManager)
         {
-            _userManager = userManager;
+            _userService = userManager;
         }
 
         [HttpGet]
@@ -23,13 +22,17 @@ namespace ToDoApi.Controllers
         //GET : /api/UserProfile
         public async Task<object> GetUserProfile()
         {
-            string userId = User.Claims.First(c => c.Type == "UserID").Value;
-            var user = await _userManager.FindByIdAsync(userId);
+            string id = User.Claims.First(c => c.Type == "UserId").Value;
+
+            ObjectId userId = new ObjectId(id);
+
+            var user = await _userService.GetUserById(userId);
+
             return new
             {
                 user.FullName,
                 user.Email,
-                user.UserName
+                user.Name
             };
         }
     }

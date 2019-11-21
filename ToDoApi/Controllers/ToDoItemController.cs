@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using ToDo.Domain;
-using ToDo.Domain.Interfaces;
 using ToDo.Domain.Models;
 using ToDoApi.DTOs;
 
-namespace ToDoApi.Controllers
+namespace ToDo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,17 +23,35 @@ namespace ToDoApi.Controllers
             _toDoService = toDoService;
         }
 
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<ActionResult<ToDoItem>> GetToDoItemById(string id)
+        {
+            try
+            {
+                ObjectId toDoItemId = new ObjectId(id);
+
+                var toDoItem = await _toDoService.GetToDoItem(toDoItemId);
+
+                return Ok(toDoItem);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<List<ToDoItem>>> GetToDoItem()
         {
             try
             {
-                string userIdFromUserManager = User.Claims.First(c => c.Type == "UserID").Value;
+                string userId = User.Claims.First(c => c.Type == "UserId").Value;
 
-                var toDoItems = await _toDoService.GetToDoItems(userIdFromUserManager);
+                var toDoItems = await _toDoService.GetToDoItems(userId);
 
-                return toDoItems;
+                return Ok(toDoItems);
             }
             catch (Exception)
             {
@@ -45,19 +63,75 @@ namespace ToDoApi.Controllers
         [Authorize]
         public IActionResult Post([FromBody]ToDoItemCreateDto toDoItem)
         {
-            string userIdFromUserManager = User.Claims.First(c => c.Type == "UserID").Value;
-
-            var toDoItemToCreate = new ToDoItem
+            try
             {
-                Text = toDoItem.Text,
-                Title = toDoItem.Title,
-                IsDone = toDoItem.IsDone,
-                UserId = userIdFromUserManager
-            };
+                string userIdFromUserManager = User.Claims.First(c => c.Type == "UserId").Value;
 
-            _toDoService.AddToDoItem(toDoItemToCreate);
+                var toDoItemToCreate = new ToDoItem
+                {
+                    Id = ObjectId.GenerateNewId(),
+                    Text = toDoItem.Text,
+                    Title = toDoItem.Title,
+                    IsDone = toDoItem.IsDone,
+                    UserId = userIdFromUserManager
+                };
 
-            return NoContent();
+                _toDoService.AddToDoItem(toDoItemToCreate);
+
+                return CreatedAtRoute(new
+                    {
+                        id = toDoItemToCreate.Id
+                    }, 
+                    toDoItemToCreate);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
+            
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<ActionResult<bool>> Put(string id, [FromBody]ToDoItemCreateDto toDo)
+        {
+            try
+            {
+                ObjectId toDoItemId = new ObjectId(id);
+
+                var toDoItemFromRepo = await _toDoService.GetToDoItem(toDoItemId);
+
+                var toDoToPut = new ToDoItem
+                {
+                    Id = toDoItemFromRepo.Id,
+                    Text = toDo.Text,
+                    Title = toDo.Title,
+                    IsDone = toDo.IsDone,
+                    UserId = toDoItemFromRepo.UserId
+                };
+
+                return await _toDoService.UpdateToDoItem(toDoItemId, toDoToPut);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
+        }
+
+        [HttpDelete]
+        [Authorize]
+        public async Task<ActionResult<bool>> Delete(string id)
+        {
+            try
+            {
+                ObjectId toDoItemId = new ObjectId(id);
+
+                return await _toDoService.DeleteToDoItem(toDoItemId);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+            }
         }
     }
 }

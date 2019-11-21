@@ -17,7 +17,7 @@ using ToDo.Repositories.Repositories;
 using ToDo.Services;
 using ToDoApi.Models;
 
-namespace ToDoApi
+namespace ToDo.Api
 {
     public class Startup
     {
@@ -43,12 +43,6 @@ namespace ToDoApi
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddDbContext<AuthenticationContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
-
-            services.AddDefaultIdentity<ApplicationUser>()
-                .AddEntityFrameworkStores<AuthenticationContext>();
-
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IToDoRepository, ToDoRepository>();
             services.AddScoped<IToDoService, ToDoService>();
@@ -68,7 +62,7 @@ namespace ToDoApi
 
             //Jwt Authentication
 
-            var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
+            var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"]);
 
             services.AddAuthentication(x =>
             {
@@ -78,7 +72,7 @@ namespace ToDoApi
             }).AddJwtBearer(x => {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = false;
-                x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
