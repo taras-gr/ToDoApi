@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using ToDo.Domain.Models;
 
-namespace ToDo.Domain
+namespace ToDo.Services.Interfaces
 {
     public interface IToDoService
     {

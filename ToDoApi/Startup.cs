@@ -15,6 +15,7 @@ using ToDo.Domain.Interfaces;
 using ToDo.Repositories;
 using ToDo.Repositories.Repositories;
 using ToDo.Services;
+using ToDo.Services.Interfaces;
 using ToDoApi.Models;
 
 namespace ToDo.Api
@@ -31,6 +32,18 @@ namespace ToDo.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            ToDo.Repositories.Repositories.ModuleInitializer.Init();
+            ToDo.Services.ModuleInitializer.Init();
+            foreach (var dep in IoC.IoC.GetDependencies())
+            {
+                services.AddScoped(dep.Key, dep.Value);
+            }
+            services.AddDistributedMemoryCache();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost:6379";
+                options.InstanceName = "SampleInstance";
+            });
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString
@@ -42,11 +55,6 @@ namespace ToDo.Api
             services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IToDoRepository, ToDoRepository>();
-            services.AddScoped<IToDoService, ToDoService>();
-            services.AddScoped<IUserService, UserService>();
 
             services.Configure<IdentityOptions>(options =>
             {
