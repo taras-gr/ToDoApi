@@ -25,6 +25,9 @@ namespace ToDo.Repositories.Repositories
         {
             try
             {
+                if (await UserExistWithUserName(user.Name))
+                    throw new Exception($"User with name {user.Name} is already exist.");
+
                 await _context.Users.InsertOneAsync(user);
             }
             catch (Exception ex)
@@ -97,6 +100,16 @@ namespace ToDo.Repositories.Repositories
             {
                 throw ex;
             }
+        }
+
+        private async Task<bool> UserExistWithUserName(string userName)
+        {
+            var userFromRepository = await _context.Users.Find(user => user.Name == userName).FirstOrDefaultAsync();
+
+            if (userFromRepository == null)
+                return false;
+
+            return true;
         }
     }
 }

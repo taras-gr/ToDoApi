@@ -1,12 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ToDo.Domain;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using ToDo.Domain.Interfaces;
 using ToDo.Domain.Models;
+using ToDo.Services.Interfaces;
+using ToDoApi.Models;
 
 namespace ToDo.Api.Controllers
 {
@@ -14,27 +19,76 @@ namespace ToDo.Api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _repository;
+        private readonly IUserService _userService;
+        private readonly ApplicationSettings _appSettings;
 
-        public UserController(IUserRepository repository)
+        public UserController(IUserService userService, IOptions<ApplicationSettings> appSettings)
         {
-            _repository = repository;
+            _userService = userService;
+            _appSettings = appSettings.Value;
         }
 
-        [HttpGet]
-        public IActionResult Get()
+        [HttpPost("Register")]
+        //POST : /api/user/register
+        public async Task<ActionResult> PostApplicationUser([FromBody]ApplicationUserModel model)
         {
-            var users = _repository.GetUsers();
+            var newComer = new User()
+            {
+                Id = ObjectId.GenerateNewId(),
+                Name = model.UserName,
+                FullName = model.FullName,
+                Email = model.Email,
+                Password = model.Password
+            };
 
-            return Ok(users);
+            try
+            {
+                await _userService.AddUser(newComer);
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim("UserId", newComer.Id.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+                var token = tokenHandler.WriteToken(securityToken);
+                return Ok(new { token });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
-        [HttpPost]
-        public IActionResult Post(User user)
+        [HttpPost("Login")]
+        //POST : /api/user/Login
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            _repository.AddUser(user);
+            var user = await _userService.GetUserByName(model.UserName);
 
-            return NoContent();
+            if (user != null && model.Password == user.Password)
+            {
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim("UserId", user.Id.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+                var token = tokenHandler.WriteToken(securityToken);
+                return Ok(new { token });
+            }
+
+            return BadRequest(new { message = "Username or password is incorrect." });
         }
     }
 }
